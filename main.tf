@@ -17,7 +17,7 @@ provider "proxmox" {
 resource "proxmox_vm_qemu" "test_server" {
   count = 1
 
-  name        = "debian-vm-${count.index + 1}"
+  name        = "minikube-vm-${count.index + 1}"
   target_node = var.proxmox_host
   clone       = var.template_name
   os_type     = "cloud-init"
@@ -55,31 +55,37 @@ resource "proxmox_vm_qemu" "test_server" {
       port        = 22
     }
    inline = [
-  "export DEBIAN_FRONTEND=noninteractive",
-  "export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn",
-  "echo 'Checking for any apt locks...'",
-  "while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 15; done",
-  "echo 'Updating package lists...'",
-  "sudo apt-get update -y",
-  "echo 'Installing prerequisites for Docker...'",
-  "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
-  "echo 'Adding Docker GPG key and repository...'",
-  "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-  "CODENAME=$(lsb_release -cs)",
-  "echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable\" | sudo tee /etc/apt/sources.list.d/docker.list",
-  "echo 'Installing Docker...'",
-  "sudo apt-get update -y && sudo apt-get install -y docker-ce docker-ce-cli containerd.io || (echo 'Docker installation failed' && exit 1)",
-  "sudo systemctl enable docker || echo 'Failed to enable Docker'",
-  "sudo systemctl start docker || echo 'Failed to start Docker'",
-  "echo 'Installing conntrack and kubectl...'",
-  "sudo apt-get install -y conntrack kubectl",
-  "echo 'Adding user to the docker group...'",
-  "sudo usermod -aG docker $USER",
-  "echo 'Downloading Minikube...'",
-  "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64",
-  "echo 'Installing Minikube...'",
-  "sudo install minikube-linux-amd64 /usr/local/bin/minikube",
-  "echo 'Minikube installation completed.'",
+"export DEBIAN_FRONTEND=noninteractive",
+      "export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn",
+      "echo Checking for any apt locks...",
+      "while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 15; done",
+      "echo Updating package lists...",
+      "sudo apt-get update -y",
+      "echo Installing prerequisites for Docker...",
+      "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
+      "echo Adding Docker GPG key and repository...",
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
+      "echo deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable | sudo tee /etc/apt/sources.list.d/docker.list",
+      "echo Installing Docker...",
+      "sudo apt-get update -y && sudo apt-get install -y docker-ce docker-ce-cli containerd.io || (echo Docker installation failed && exit 1)",
+      "sudo systemctl enable docker || echo Failed to enable Docker",
+      "sudo systemctl start docker || echo Failed to start Docker",
+      "echo Adding Kubernetes GPG key...",
+      "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg",
+      "echo deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-$(lsb_release -cs) main | sudo tee /etc/apt/sources.list.d/kubernetes.list",
+      "echo Updating package lists for Kubernetes...",
+      "sudo apt-get update -y",
+      "echo Installing conntrack and kubectl...",
+      "sudo apt-get install -y conntrack kubectl",
+      "echo Adding user to the docker group...",
+      "sudo usermod -aG docker `whoami`",
+      "echo Downloading Minikube...",
+      "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64",
+      "echo Installing Minikube...",
+      "sudo install minikube-linux-amd64 /usr/local/bin/minikube",
+      "echo Starting Minikube...",
+      "sudo -u `whoami` minikube start",
+      "echo Minikube started."
 ]
   }
 }
