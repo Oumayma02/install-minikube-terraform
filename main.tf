@@ -8,9 +8,9 @@ terraform {
 }
 
 provider "proxmox" {
-  pm_api_url          = "https://192.168.254.153:8006/api2/json"
-  pm_api_token_id     = "terraform@pam!terraform"
-  pm_api_token_secret = "c467d123-6860-4936-9c17-66fdb00ae41a"
+  pm_api_url          = var.pm_api_url
+  pm_api_token_id     = var.pm_api_token_id
+  pm_api_token_secret = var.pm_api_token_secret
   pm_tls_insecure     = true
 }
 
@@ -50,36 +50,12 @@ resource "proxmox_vm_qemu" "test_server" {
     connection {
       type        = "ssh"
       user        = var.ssh_user
-      host        = self.ip
+      host        = "192.168.254.234"
       private_key = file(var.ssh_key)
       port        = 22
     }
-    inline = [
-      "export DEBIAN_FRONTEND=noninteractive",
-      "export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn",
-      "echo 'Checking for any apt locks...'",
-      "while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 15; done",
-      "echo 'Updating package lists...'",
-      "sudo apt-get update -y",
-      "echo 'Installing prerequisites for Docker...'",
-      "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
-      "echo 'Adding Docker GPG key and repository...'",
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-      "CODENAME=$(lsb_release -cs)",
-      "echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable\" | sudo tee /etc/apt/sources.list.d/docker.list",
-      "echo 'Installing Docker...'",
-      "sudo apt-get update -y && sudo apt-get install -y docker-ce docker-ce-cli containerd.io || (echo 'Docker installation failed' && exit 1)",
-      "sudo systemctl enable docker || echo 'Failed to enable Docker'",
-      "sudo systemctl start docker || echo 'Failed to start Docker'",
-      "echo 'Installing conntrack and kubectl...'",
-      "sudo apt-get install -y conntrack kubectl",
-      "echo 'Adding user to the docker group...'",
-      "sudo usermod -aG docker $USER",
-      "echo 'Downloading Minikube...'",
-      "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64",
-      "echo 'Installing Minikube...'",
-      "sudo install minikube-linux-amd64 /usr/local/bin/minikube",
-      "echo 'Minikube installation completed.'",
+     inline = [
+       "echo Hello, World!",
     ]
   }
 }

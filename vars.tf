@@ -1,31 +1,3 @@
-variable "proxmox_username" {
-  description = "Proxmox username"
-  type        = string
-}
-
-variable "proxmox_password" {
-  description = "Proxmox password"
-  type        = string
-  sensitive   = true
-}
-
-variable "pm_api_url" {
-  description = "Proxmox API URL"
-  type        = string
-  default     = "https://192.168.254.153:8006/api2/json"
-}
-
-variable "pm_api_token_id" {
-  description = "Proxmox API Token ID"
-  type        = string
-}
-
-variable "pm_api_token_secret" {
-  description = "Proxmox API Token Secret"
-  type        = string
-  sensitive   = true
-}
-
 variable "vm_name" {
   description = "Name of the virtual machine"
   type        = string
@@ -42,9 +14,10 @@ variable "vm_memory" {
 }
 
 variable "disk_size" {
-  description = "Size of the disk in GB"
+  description = "Size of the disk (e.g., '10G' for 10 gigabytes)"
   type        = string
 }
+
 
 variable "ssh_key" {
   description = "Path to SSH private key for accessing the VM"
@@ -68,4 +41,21 @@ variable "template_name" {
   description = "Template name"
   type        = string
   default     = "minikube"
+}
+
+variable "pm_api_url" {
+  description = "Proxmox API URL"
+  type        = string
+  default     = "https://192.168.254.153:8006/api2/json"
+}
+
+variable "pm_api_token_id" {
+  description = "Proxmox API Token ID"
+  type        = string
+}
+
+variable "pm_api_token_secret" {
+  description = "Proxmox API Token Secret"
+  type        = string
+  sensitive   = true
 }
